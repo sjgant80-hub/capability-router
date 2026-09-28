@@ -40,6 +40,7 @@
   .pill.stage{color:var(--accent);border-color:color-mix(in oklab,var(--accent) 40%,var(--line))}
   .pill.organ{color:var(--ink)}
   .pill.auto{color:var(--ok);border-color:color-mix(in oklab,var(--ok) 45%,var(--line));font-weight:600}
+  .pill.walled{color:var(--warn);border-color:color-mix(in oklab,var(--warn) 45%,var(--line));font-weight:600}
   .addr{font-family:var(--mono);font-size:.82rem;color:var(--faint);margin-top:6px}
   .err{color:var(--warn);font-size:.88rem;font-family:var(--mono)}
   .gate{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
@@ -125,23 +126,27 @@ function renderRoute(el, r){
 }
 
 // Card 1 — text → route → dispatch plan
-// AUTO = the organs the running body's live dispatcher (claudedidy/dispatch.mjs) can invoke automatically
-// TODAY; every other addressed organ is honestly shown as still by-hand. Kept in sync with HANDLER_NAMES.
-const AUTO=new Set(['witness','fall-remember']);
+// The running body's live dispatcher (claudedidy/dispatch.mjs) places each addressed organ in ONE of three
+// honest states. AUTO = safe organs with a real handler that auto-invoke. WALLED = money / publish /
+// external-irreversible organs that are prepared + queued for Simon's key, never auto-run (BY DESIGN).
+// Everything else is a safe organ with no handler wired yet (by-hand TODO). Kept in sync with the harness.
+const AUTO=new Set(['witness','acg-assessor','dual-map-gate','fallkit','fall-remember','nested-solid','durable-memory']);
+const WALLED=new Set(['the-wallet','konomium-vault','kcc-mint','fallaccount-engine','fallforge','fall-federate','meshos','mesh-and-pub','signals-feed']);
 function runTask(){
   const d=decompose($('task').value);
   if(!d.ok){renderRoute($('taskOut'), d);return;}
   const r=route(d.stages);
   renderRoute($('taskOut'), r);
   if(!r.ok)return;
-  const auto=r.organs.filter(o=>AUTO.has(o)), byhand=r.organs.filter(o=>!AUTO.has(o));
+  const auto=r.organs.filter(o=>AUTO.has(o)), walled=r.organs.filter(o=>WALLED.has(o)), todo=r.organs.filter(o=>!AUTO.has(o)&&!WALLED.has(o));
   const wrap=document.createElement('div');wrap.style.marginTop='12px';
   const line=document.createElement('div');line.className='addr';
-  line.textContent='dispatch plan · '+auto.length+' auto-invoked in the running body · '+byhand.length+' addressed, still by-hand';
+  line.textContent='dispatch plan · '+auto.length+' auto-invoked · '+walled.length+' behind Simon’s key · '+todo.length+' by-hand TODO';
   wrap.appendChild(line);
   const row=document.createElement('div');row.style.marginTop='6px';
   for(const o of auto){const p=document.createElement('span');p.className='pill auto';p.textContent='▶ '+o;row.appendChild(p);}
-  for(const o of byhand){const p=document.createElement('span');p.className='pill';p.textContent=o;row.appendChild(p);}
+  for(const o of walled){const p=document.createElement('span');p.className='pill walled';p.textContent='🔒 '+o;row.appendChild(p);}
+  for(const o of todo){const p=document.createElement('span');p.className='pill';p.textContent=o;row.appendChild(p);}
   wrap.appendChild(row);
   $('taskOut').appendChild(wrap);
 }
