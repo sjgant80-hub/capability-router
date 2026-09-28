@@ -39,6 +39,7 @@
   .pill{display:inline-block;font-family:var(--mono);font-size:.74rem;padding:.24rem .6rem;border-radius:20px;border:1px solid var(--line);background:var(--panel2);margin:0 5px 6px 0;color:var(--muted)}
   .pill.stage{color:var(--accent);border-color:color-mix(in oklab,var(--accent) 40%,var(--line))}
   .pill.organ{color:var(--ink)}
+  .pill.auto{color:var(--ok);border-color:color-mix(in oklab,var(--ok) 45%,var(--line));font-weight:600}
   .addr{font-family:var(--mono);font-size:.82rem;color:var(--faint);margin-top:6px}
   .err{color:var(--warn);font-size:.88rem;font-family:var(--mono)}
   .gate{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
@@ -59,7 +60,9 @@
   <p class="lead">Seven capability stages — <b>Prove · Own · Shape · Carry · Remember · Run · Connect</b>.
   A task needs some non-empty combination of them; there are exactly <b>127</b> such combinations, each a
   stable address. This router maps a need to the precise set of estate organs that serve it — and a
-  <b>coverage gate</b> proves no task falls through a silent gap. Kernel-backed by the witness-gated
+  <b>coverage gate</b> proves no task falls through a silent gap. It is the routing step of the running
+  body's live dispatcher (<code>dispatch.mjs</code>): a real task is addressed here, then the organs with
+  a handler auto-invoke and the rest are flagged by-hand. Kernel-backed by the witness-gated
   <code>router.mjs</code>.</p>
   <div class="badges">
     <span class="badge">deterministic · <b>witness-gated</b></span>
@@ -121,11 +124,26 @@ function renderRoute(el, r){
   el.appendChild(a);
 }
 
-// Card 1 — text → route
+// Card 1 — text → route → dispatch plan
+// AUTO = the organs the running body's live dispatcher (claudedidy/dispatch.mjs) can invoke automatically
+// TODAY; every other addressed organ is honestly shown as still by-hand. Kept in sync with HANDLER_NAMES.
+const AUTO=new Set(['witness','fall-remember']);
 function runTask(){
   const d=decompose($('task').value);
   if(!d.ok){renderRoute($('taskOut'), d);return;}
-  renderRoute($('taskOut'), route(d.stages));
+  const r=route(d.stages);
+  renderRoute($('taskOut'), r);
+  if(!r.ok)return;
+  const auto=r.organs.filter(o=>AUTO.has(o)), byhand=r.organs.filter(o=>!AUTO.has(o));
+  const wrap=document.createElement('div');wrap.style.marginTop='12px';
+  const line=document.createElement('div');line.className='addr';
+  line.textContent='dispatch plan · '+auto.length+' auto-invoked in the running body · '+byhand.length+' addressed, still by-hand';
+  wrap.appendChild(line);
+  const row=document.createElement('div');row.style.marginTop='6px';
+  for(const o of auto){const p=document.createElement('span');p.className='pill auto';p.textContent='▶ '+o;row.appendChild(p);}
+  for(const o of byhand){const p=document.createElement('span');p.className='pill';p.textContent=o;row.appendChild(p);}
+  wrap.appendChild(row);
+  $('taskOut').appendChild(wrap);
 }
 $('routeBtn').onclick=runTask;
 
