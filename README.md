@@ -2,6 +2,11 @@
 
 **▶ Live: https://sjgant80-hub.github.io/capability-router/**
 
+<!-- film-2026-09 -->
+**▶ [Watch the 90-second film](https://www.ai-nativesolutions.com/explainer.html#film)** — the router and its dispatcher, inside the whole estate · [The brochure (PDF)](https://www.ai-nativesolutions.com/fall-os-prospectus.pdf) · [Every number, sourced](https://www.ai-nativesolutions.com/explainer.html#facts)
+
+[![The dispatcher's three honest states: 7 run themselves, 9 wait for a human key, 8 to-do](https://www.ai-nativesolutions.com/media/images/dispatcher-three-states.jpg)](https://www.ai-nativesolutions.com/explainer.html#film)
+
 A sovereign, deterministic **router over the estate's real organs**. Seven capability
 stages — **Prove · Own · Shape · Carry · Remember · Run · Connect** — and a task needs
 some non-empty combination of them. There are exactly **127** such combinations, each a
