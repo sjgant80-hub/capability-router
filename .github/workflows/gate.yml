@@ -1,0 +1,20 @@
+name: witness-gate
+# Un-forgeable proof on GitHub's runner: unit tests prove the router does what it claims,
+# and the witness mutation gate proves those tests actually guard the kernel (CLEAN or fail).
+on:
+  push:
+    paths: [router.mjs, router.test.mjs, .witness/**, .github/workflows/gate.yml]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: unit tests — the router does what it claims
+        run: node --test router.test.mjs
+      - name: witness mutation gate — the tests actually guard the kernel
+        run: node .witness/witness.mjs mutate router.mjs --cap 500 --test node --test router.test.mjs

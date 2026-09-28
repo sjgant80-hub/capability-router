@@ -1,0 +1,4 @@
+node_modules/
+witness-out.json
+witness-err.txt
+*.witnessbak

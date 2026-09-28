@@ -1,0 +1,16 @@
+# Capability Router
+
+> A deterministic capability router over the estate's real organs. Seven capability
+> stages (Prove, Own, Shape, Carry, Remember, Run, Connect); a task needs any non-empty
+> combination of them (127 in all), each a stable address. route() maps a need to the
+> exact organ-set; a coverage gate proves every stage is served and no task falls
+> through a silent gap. Kernel-backed, witness-gated, zero dependencies, runs offline.
+
+## What it is
+- Live: https://sjgant80-hub.github.io/capability-router/
+- router.mjs — pure, total, deterministic kernel (addressOf, stagesOf, route, decompose, coverage)
+- Witness mutation gate CLEAN; unit tests cover every function and the coverage gate itself.
+
+## Provenance
+- The seven-stage / 127-address basis is Thomas Frumkin's MACCubeFACE lattice (https://github.com/teslasolar/MianoCube).
+- The router over the estate's organs, the coverage gate, and the page are the estate's build. MIT.

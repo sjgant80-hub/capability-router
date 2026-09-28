@@ -1,0 +1,15 @@
+Capability Router
+Copyright (c) 2026 Simon Gant — the FallForge estate (sjgant80-hub)
+
+The estate's own code and additions (the router kernel router.mjs, the coverage
+gate, and the single-file PWA) are licensed under the MIT License (see LICENSE).
+The MIT license covers the estate's own code only.
+
+PROVENANCE
+
+- The seven-stage / 127-address capability basis — the seven-ring structure that
+  gives every non-empty combination of capabilities a stable address — is Thomas
+  Frumkin's MACCubeFACE lattice, published at https://github.com/teslasolar/MianoCube
+  (the Konomi Cube). The basis is his; this deterministic router over the estate's
+  own organs, and its coverage gate, are the estate's build on top of it. Powered by
+  the Konomi architecture, created by Thomas Frumkin.

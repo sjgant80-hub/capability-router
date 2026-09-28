@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Capability Router</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A deterministic capability router over the estate's real organs: describe a task, get the exact set of organs it needs, with a coverage gate that proves no task falls through a gap. Kernel-backed and witness-gated.">
+<meta name="theme-color" content="#0b0e14">
+<style>
+  :root{--bg:#f6f8fb;--panel:#fff;--panel2:#eef2f8;--ink:#0d1520;--muted:#5a6675;--faint:#8b95a4;--line:#e2e8f0;--accent:#2f6fed;--accent2:#7048e8;--accent-ink:#fff;--ok:#0c9463;--warn:#d9880a;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,system-ui,sans-serif;--mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;--maxw:980px;--r:14px}
+  @media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#080b11;--panel:#111722;--panel2:#161d2a;--ink:#e8eef6;--muted:#8d99a9;--faint:#5b6675;--line:#1f2836;--accent:#5c8cff;--accent2:#9775fa;--accent-ink:#080b11;--ok:#2fbd85;--warn:#e6a23c}}
+  :root[data-theme=dark]{--bg:#080b11;--panel:#111722;--panel2:#161d2a;--ink:#e8eef6;--muted:#8d99a9;--faint:#5b6675;--line:#1f2836;--accent:#5c8cff;--accent2:#9775fa;--accent-ink:#080b11;--ok:#2fbd85;--warn:#e6a23c}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+  a{color:var(--accent)}
+  code{font-family:var(--mono);font-size:.88em;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:.05em .35em}
+  h1{font-size:clamp(1.9rem,5vw,2.7rem);letter-spacing:-.03em;margin:.3rem 0;font-weight:850}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  header{padding:52px 0 18px}
+  header p.lead{color:var(--muted);font-size:1.04rem;max-width:74ch}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+  .badge{font-family:var(--mono);font-size:.72rem;color:var(--muted);border:1px solid var(--line);border-radius:20px;padding:.3rem .72rem;background:var(--panel)}
+  .badge b{color:var(--ok)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  section{padding:14px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+  .card h2{font-size:1.05rem;margin:0 0 .6rem}
+  .card p.hint{color:var(--muted);font-size:.86rem;margin:0 0 12px}
+  input[type=text]{width:100%;font-family:var(--sans);font-size:.95rem;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--ink)}
+  .btn{padding:.55rem 1rem;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font-size:.9rem;font-weight:600;cursor:pointer;font-family:var(--sans);margin-top:10px}
+  .btn:hover{filter:brightness(1.08)}
+  .stagegrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media(max-width:520px){.stagegrid{grid-template-columns:1fr}}
+  .stage{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);cursor:pointer;font-size:.9rem;user-select:none}
+  .stage input{accent-color:var(--accent);width:16px;height:16px}
+  .stage b{font-family:var(--mono);font-size:.78rem;color:var(--accent);text-transform:uppercase;letter-spacing:.04em}
+  .out{margin-top:14px}
+  .pill{display:inline-block;font-family:var(--mono);font-size:.74rem;padding:.24rem .6rem;border-radius:20px;border:1px solid var(--line);background:var(--panel2);margin:0 5px 6px 0;color:var(--muted)}
+  .pill.stage{color:var(--accent);border-color:color-mix(in oklab,var(--accent) 40%,var(--line))}
+  .pill.organ{color:var(--ink)}
+  .addr{font-family:var(--mono);font-size:.82rem;color:var(--faint);margin-top:6px}
+  .err{color:var(--warn);font-size:.88rem;font-family:var(--mono)}
+  .gate{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .gate .dot{width:14px;height:14px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px color-mix(in oklab,var(--ok) 22%,transparent)}
+  .gate .verdict{font-weight:800;font-size:1.05rem}
+  .stat{display:flex;gap:22px;flex-wrap:wrap;margin-top:12px}
+  .stat b{display:block;font-size:1.5rem;font-weight:850;font-variant-numeric:tabular-nums}
+  .stat span{color:var(--muted);font-size:.75rem}
+  .theme{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:.8rem;float:right;margin-top:14px}
+  footer{padding:30px 0;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);margin-top:24px}
+</style>
+
+<div class="wrap">
+<button class="theme" id="theme" type="button">Theme</button>
+<header>
+  <span class="eyebrow">Capability Router · sovereign</span>
+  <h1>Route a task to the exact organs it needs.</h1>
+  <p class="lead">Seven capability stages — <b>Prove · Own · Shape · Carry · Remember · Run · Connect</b>.
+  A task needs some non-empty combination of them; there are exactly <b>127</b> such combinations, each a
+  stable address. This router maps a need to the precise set of estate organs that serve it — and a
+  <b>coverage gate</b> proves no task falls through a silent gap. Kernel-backed by the witness-gated
+  <code>router.mjs</code>.</p>
+  <div class="badges">
+    <span class="badge">deterministic · <b>witness-gated</b></span>
+    <span class="badge">zero dependencies · runs offline</span>
+    <span class="badge">7 stages · <b id="b-addr">127</b> addresses</span>
+  </div>
+</header>
+
+<section class="grid">
+  <div class="card">
+    <h2>1 · Describe a task</h2>
+    <p class="hint">Plain words. The router reads which capabilities you asked for.</p>
+    <input type="text" id="task" value="prove the receipt then store and publish it">
+    <button class="btn" id="routeBtn" type="button">Route →</button>
+    <div class="out" id="taskOut"></div>
+  </div>
+  <div class="card">
+    <h2>2 · Or pick the stages</h2>
+    <p class="hint">Toggle capabilities; the address and organ-set update live.</p>
+    <div class="stagegrid" id="stagegrid"></div>
+    <div class="out" id="pickOut"></div>
+  </div>
+</section>
+
+<section>
+  <div class="card">
+    <h2>3 · Coverage gate</h2>
+    <p class="hint">The gate re-runs live in your browser over the real registry.</p>
+    <div class="gate" id="gate"></div>
+    <div class="stat" id="gateStat"></div>
+  </div>
+</section>
+
+<footer class="wrap">
+  <b>Capability Router</b> — the estate's build. The seven-stage / 127-address capability basis is
+  <a href="https://github.com/teslasolar/MianoCube" target="_blank" rel="noopener">Thomas Frumkin's MACCubeFACE lattice</a>;
+  the router over the estate's own organs, its coverage gate, and this page are the estate's, MIT
+  (see <a href="LICENSE" target="_blank" rel="noopener">LICENSE</a> + <a href="NOTICE" target="_blank" rel="noopener">NOTICE</a>).
+  Powered by the Konomi architecture, created by Thomas Frumkin. — Kar (karma-didy)
+</footer>
+</div>
+
+<script type="module">
+import { STAGES, addressOf, stagesOf, route, decompose, coverage } from './router.mjs';
+const $=id=>document.getElementById(id);
+(function(){try{const s=localStorage.getItem('cr-theme');if(s)document.documentElement.setAttribute('data-theme',s);}catch(e){}
+  $('theme').onclick=()=>{const c=document.documentElement.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);try{localStorage.setItem('cr-theme',n)}catch(e){}};})();
+
+function renderRoute(el, r){
+  el.innerHTML='';
+  if(!r.ok){el.innerHTML='<div class="err">'+r.error+'</div>';return;}
+  const stages=document.createElement('div');
+  for(const s of r.stages){const p=document.createElement('span');p.className='pill stage';p.textContent=s;stages.appendChild(p);}
+  el.appendChild(stages);
+  const organs=document.createElement('div');organs.style.marginTop='8px';
+  for(const o of r.organs){const p=document.createElement('span');p.className='pill organ';p.textContent=o;organs.appendChild(p);}
+  el.appendChild(organs);
+  const a=document.createElement('div');a.className='addr';a.textContent='address '+r.address+' · '+r.organs.length+' organ(s)';
+  el.appendChild(a);
+}
+
+// Card 1 — text → route
+function runTask(){
+  const d=decompose($('task').value);
+  if(!d.ok){renderRoute($('taskOut'), d);return;}
+  renderRoute($('taskOut'), route(d.stages));
+}
+$('routeBtn').onclick=runTask;
+
+// Card 2 — checkboxes → route
+const grid=$('stagegrid');
+for(const s of STAGES){
+  const lab=document.createElement('label');lab.className='stage';
+  lab.innerHTML='<input type="checkbox" value="'+s+'"><b>'+s+'</b>';
+  lab.querySelector('input').addEventListener('change',runPick);
+  grid.appendChild(lab);
+}
+function runPick(){
+  const picked=[...grid.querySelectorAll('input:checked')].map(i=>i.value);
+  if(picked.length===0){$('pickOut').innerHTML='<div class="addr">no stage selected — pick at least one</div>';return;}
+  renderRoute($('pickOut'), route(picked));
+}
+
+// Card 3 — coverage gate
+function runGate(){
+  const c=coverage();
+  const g=$('gate');g.innerHTML='';
+  const dot=document.createElement('div');dot.className='dot';if(!c.ok)dot.style.background='var(--warn)';
+  const v=document.createElement('div');v.className='verdict';
+  v.textContent=c.ok?'PASS — every task routes, no gaps':'FAIL — '+(c.unservedStages.concat(c.unkeyedStages).join(', ')||c.emptyRoutes+' empty routes');
+  g.appendChild(dot);g.appendChild(v);
+  const st=$('gateStat');st.innerHTML='';
+  for(const [val,lbl] of [[c.stages,'stages served'],[c.addresses,'addresses'],[c.organs,'organs'],[c.emptyRoutes,'silent gaps']]){
+    const d=document.createElement('div');d.innerHTML='<b>'+val+'</b><span>'+lbl+'</span>';st.appendChild(d);
+  }
+}
+
+runTask(); runPick(); runGate();
+</script>
+</html>
